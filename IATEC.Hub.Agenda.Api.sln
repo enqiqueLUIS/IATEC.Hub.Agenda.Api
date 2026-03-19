@@ -1,8 +1,34 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agenda.Core", "Agenda.Core\Agenda.Core.csproj", "{EE32B01A-72EB-489F-BCB6-DBC449BDD081}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agenda.Application", "Agenda.Application\Agenda.Application.csproj", "{AFDAD8FC-76F2-4418-9355-5E06E5606BE0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agenda.Web", "Agenda.Web\Agenda.Web.csproj", "{E88EE010-9E1D-4D5A-B925-3A72CD2FA2A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agenda.Infrastructure", "Agenda.Infrastructure\Agenda.Infrastructure.csproj", "{20347101-AFFA-49F9-9206-54B9E7C1083D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EE32B01A-72EB-489F-BCB6-DBC449BDD081}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE32B01A-72EB-489F-BCB6-DBC449BDD081}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE32B01A-72EB-489F-BCB6-DBC449BDD081}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE32B01A-72EB-489F-BCB6-DBC449BDD081}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFDAD8FC-76F2-4418-9355-5E06E5606BE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFDAD8FC-76F2-4418-9355-5E06E5606BE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFDAD8FC-76F2-4418-9355-5E06E5606BE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFDAD8FC-76F2-4418-9355-5E06E5606BE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E88EE010-9E1D-4D5A-B925-3A72CD2FA2A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E88EE010-9E1D-4D5A-B925-3A72CD2FA2A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E88EE010-9E1D-4D5A-B925-3A72CD2FA2A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E88EE010-9E1D-4D5A-B925-3A72CD2FA2A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20347101-AFFA-49F9-9206-54B9E7C1083D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20347101-AFFA-49F9-9206-54B9E7C1083D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20347101-AFFA-49F9-9206-54B9E7C1083D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20347101-AFFA-49F9-9206-54B9E7C1083D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
