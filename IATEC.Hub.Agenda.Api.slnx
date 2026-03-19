@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/IATEC.Hub.Agenda.Api/IATEC.Hub.Agenda.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/IATEC.Hub.Agenda.Tests/IATEC.Hub.Agenda.Tests.csproj" />
+  </Folder>
+</Solution>

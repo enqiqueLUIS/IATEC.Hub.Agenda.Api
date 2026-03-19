@@ -1,0 +1,26 @@
+@IATEC.Hub.Agenda.Api_HostAddress = http://localhost:5123
+
+GET {{IATEC.Hub.Agenda.Api_HostAddress}}/api/dashboard
+Accept: application/json
+
+###
+
+GET {{IATEC.Hub.Agenda.Api_HostAddress}}/api/events
+Accept: application/json
+
+###
+
+POST {{IATEC.Hub.Agenda.Api_HostAddress}}/api/events
+Content-Type: application/json
+
+{
+  "title": "Example Event",
+  "description": "Description here",
+  "startDate": "2026-04-01T09:00:00Z",
+  "endDate": "2026-04-01T10:00:00Z",
+  "location": "Meeting Room A",
+  "isExclusive": false,
+  "createdBy": "usuario1"
+}
+
+###

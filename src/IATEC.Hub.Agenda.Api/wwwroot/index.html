@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agenda Hub</title>
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #1d4ed8;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* NAV */
+    nav {
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 56px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+    nav .brand { font-size: 1.2rem; font-weight: 700; letter-spacing: .5px; }
+    nav .user-info { display: flex; align-items: center; gap: 12px; font-size: .9rem; }
+    nav input#navUser {
+      border: none; border-radius: 6px; padding: 4px 10px;
+      background: rgba(255,255,255,.2); color: #fff; outline: none;
+      width: 160px;
+    }
+    nav input#navUser::placeholder { color: rgba(255,255,255,.6); }
+
+    /* TABS */
+    .tabs {
+      display: flex; gap: 0;
+      background: var(--card);
+      border-bottom: 2px solid var(--border);
+      padding: 0 24px;
+    }
+    .tab-btn {
+      padding: 14px 20px; border: none; background: transparent;
+      cursor: pointer; font-size: .95rem; font-weight: 500; color: var(--muted);
+      border-bottom: 3px solid transparent; margin-bottom: -2px;
+      transition: color .2s, border-color .2s;
+    }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+
+    /* PAGES */
+    .page { display: none; padding: 24px; max-width: 1100px; margin: 0 auto; }
+    .page.active { display: block; }
+
+    /* SECTION HEADER */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+    }
+    .section-header h2 { font-size: 1.4rem; }
+
+    /* BUTTONS */
+    .btn {
+      padding: 8px 18px; border: none; border-radius: 7px;
+      cursor: pointer; font-size: .9rem; font-weight: 600;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:hover { opacity: .85; transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-danger  { background: var(--danger);  color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+    .btn-sm { padding: 5px 12px; font-size: .82rem; }
+
+    /* FILTERS */
+    .filters {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      background: var(--card); padding: 14px 16px;
+      border-radius: var(--radius); border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .filters input, .filters select {
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 7px 12px; font-size: .88rem; outline: none;
+      background: var(--bg);
+    }
+    .filters input:focus, .filters select:focus { border-color: var(--primary); }
+    .filters input[type="text"] { flex: 1; min-width: 160px; }
+
+    /* CARDS GRID */
+    .events-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+
+    /* EVENT CARD */
+    .event-card {
+      background: var(--card); border-radius: var(--radius);
+      border: 1px solid var(--border); padding: 18px;
+      transition: box-shadow .2s;
+      position: relative; overflow: hidden;
+    }
+    .event-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.1); }
+    .event-card .badge-exclusive {
+      position: absolute; top: 12px; right: 12px;
+      background: var(--warning); color: #fff;
+      font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+    }
+    .event-card h3 { font-size: 1.05rem; margin-bottom: 6px; padding-right: 80px; }
+    .event-card .meta { font-size: .82rem; color: var(--muted); margin-bottom: 4px; }
+    .event-card .card-footer {
+      display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap;
+    }
+
+    /* DASHBOARD */
+    .dashboard-section { margin-bottom: 32px; }
+    .dashboard-section h3 {
+      font-size: 1.1rem; font-weight: 600; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .dot-green { background: var(--success); }
+    .dot-blue  { background: var(--primary); }
+    .empty-state {
+      text-align: center; color: var(--muted);
+      padding: 40px; background: var(--card);
+      border-radius: var(--radius); border: 1px dashed var(--border);
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); z-index: 999;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card); border-radius: 14px;
+      padding: 28px; width: 100%; max-width: 500px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.25);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal h2 { font-size: 1.2rem; margin-bottom: 20px; }
+
+    /* FORM */
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: .88rem; font-weight: 600; margin-bottom: 5px; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; border: 1px solid var(--border); border-radius: 7px;
+      padding: 9px 12px; font-size: .9rem; outline: none;
+      background: var(--bg); font-family: inherit;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--primary);
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .checkbox-group { display: flex; align-items: center; gap: 8px; }
+    .checkbox-group input[type=checkbox] { width: auto; }
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    .error-msg { color: var(--danger); font-size: .85rem; margin-top: 8px; }
+
+    /* TOAST */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--text); color: #fff;
+      padding: 12px 20px; border-radius: 8px;
+      font-size: .9rem; opacity: 0; pointer-events: none;
+      transition: opacity .3s; z-index: 9999;
+    }
+    #toast.show { opacity: 1; }
+    #toast.success { background: var(--success); }
+    #toast.error   { background: var(--danger); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="brand">📅 Agenda Hub</span>
+  <div class="user-info">
+    <span>Usuario:</span>
+    <input id="navUser" type="text" placeholder="tu nombre" value="usuario1" />
+  </div>
+</nav>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('dashboard')">🏠 Dashboard</button>
+  <button class="tab-btn" onclick="switchTab('events')">📋 Eventos</button>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div id="page-dashboard" class="page active">
+  <div class="section-header">
+    <h2>Dashboard</h2>
+    <button class="btn btn-primary" onclick="loadDashboard()">🔄 Actualizar</button>
+  </div>
+
+  <div class="dashboard-section">
+    <h3><span class="dot dot-green"></span> Eventos en curso</h3>
+    <div id="current-events" class="events-grid"></div>
+  </div>
+
+  <div class="dashboard-section">
+    <h3><span class="dot dot-blue"></span> Próximos eventos</h3>
+    <div id="upcoming-events" class="events-grid"></div>
+  </div>
+</div>
+
+<!-- EVENTS PAGE -->
+<div id="page-events" class="page">
+  <div class="section-header">
+    <h2>Mis Eventos</h2>
+    <button class="btn btn-primary" onclick="openCreateModal()">+ Nuevo Evento</button>
+  </div>
+
+  <div class="filters">
+    <input id="f-search" type="text" placeholder="🔍 Buscar por título, descripción o lugar..." oninput="loadEvents()" />
+    <input id="f-from" type="datetime-local" title="Desde" onchange="loadEvents()" />
+    <input id="f-to" type="datetime-local" title="Hasta" onchange="loadEvents()" />
+    <select id="f-exclusive" onchange="loadEvents()">
+      <option value="">Todos los tipos</option>
+      <option value="true">Solo exclusivos</option>
+      <option value="false">Solo no exclusivos</option>
+    </select>
+    <button class="btn btn-outline btn-sm" onclick="clearFilters()">✕ Limpiar</button>
+  </div>
+
+  <div id="events-grid" class="events-grid"></div>
+</div>
+
+<!-- EVENT MODAL (Create / Edit) -->
+<div id="event-modal" class="modal-overlay" onclick="closeIfOutside(event, 'event-modal')">
+  <div class="modal">
+    <h2 id="modal-title">Nuevo Evento</h2>
+    <input type="hidden" id="edit-id" />
+    <div class="form-group">
+      <label>Título *</label>
+      <input id="f-title" type="text" placeholder="Título del evento" />
+    </div>
+    <div class="form-group">
+      <label>Descripción</label>
+      <textarea id="f-desc" rows="3" placeholder="Descripción del evento"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Inicio *</label>
+        <input id="f-start" type="datetime-local" />
+      </div>
+      <div class="form-group">
+        <label>Fin *</label>
+        <input id="f-end" type="datetime-local" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Lugar</label>
+      <input id="f-location" type="text" placeholder="Sala, dirección, enlace…" />
+    </div>
+    <div class="form-group">
+      <div class="checkbox-group">
+        <input id="f-exclusive" type="checkbox" />
+        <label for="f-exclusive">Evento exclusivo (no permite superposición)</label>
+      </div>
+    </div>
+    <div id="modal-error" class="error-msg"></div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('event-modal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEvent()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div id="share-modal" class="modal-overlay" onclick="closeIfOutside(event, 'share-modal')">
+  <div class="modal">
+    <h2>Compartir Evento</h2>
+    <input type="hidden" id="share-event-id" />
+    <div class="form-group">
+      <label>Nombre de usuario</label>
+      <input id="share-user" type="text" placeholder="Nombre del usuario a compartir" />
+    </div>
+    <div id="share-error" class="error-msg"></div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeModal('share-modal')">Cancelar</button>
+      <button class="btn btn-success" onclick="shareEvent()">Compartir</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const API = '/api';
+
+  // ──────────────────────────────────
+  // UTILS
+  // ──────────────────────────────────
+  function getCurrentUser() {
+    return document.getElementById('navUser').value.trim() || 'usuario1';
+  }
+
+  function fmt(dt) {
+    if (!dt) return '—';
+    return new Date(dt).toLocaleString('es-ES', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  function toLocalISO(utc) {
+    const d = new Date(utc);
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `show ${type}`;
+    setTimeout(() => { t.className = ''; }, 3000);
+  }
+
+  async function apiFetch(path, opts = {}) {
+    const res = await fetch(API + path, {
+      headers: { 'Content-Type': 'application/json' },
+      ...opts
+    });
+    if (res.status === 204) return null;
+    return res.ok ? res.json() : res.json().then(e => Promise.reject(e));
+  }
+
+  // ──────────────────────────────────
+  // TABS
+  // ──────────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    event.target.classList.add('active');
+    if (name === 'dashboard') loadDashboard();
+    if (name === 'events') loadEvents();
+  }
+
+  // ──────────────────────────────────
+  // DASHBOARD
+  // ──────────────────────────────────
+  async function loadDashboard() {
+    const user = getCurrentUser();
+    try {
+      const data = await apiFetch(`/dashboard?user=${encodeURIComponent(user)}`);
+      renderEventList('current-events', data.currentEvents, false);
+      renderEventList('upcoming-events', data.upcomingEvents, false);
+    } catch {
+      showToast('Error al cargar el dashboard', 'error');
+    }
+  }
+
+  function renderEventList(containerId, events, showActions) {
+    const el = document.getElementById(containerId);
+    if (!events || events.length === 0) {
+      el.innerHTML = '<div class="empty-state">No hay eventos aquí.</div>';
+      return;
+    }
+    el.innerHTML = events.map(e => eventCard(e, showActions)).join('');
+  }
+
+  // ──────────────────────────────────
+  // EVENTS LIST
+  // ──────────────────────────────────
+  async function loadEvents() {
+    const params = new URLSearchParams();
+    const s = document.getElementById('f-search').value;
+    const from = document.getElementById('f-from').value;
+    const to = document.getElementById('f-to').value;
+    const ex = document.getElementById('f-exclusive').value;
+    const user = getCurrentUser();
+
+    if (s) params.set('search', s);
+    if (from) params.set('from', new Date(from).toISOString());
+    if (to) params.set('to', new Date(to).toISOString());
+    if (ex !== '') params.set('isExclusive', ex);
+    params.set('createdBy', user);
+
+    try {
+      const data = await apiFetch(`/events?${params}`);
+      const grid = document.getElementById('events-grid');
+      if (!data || data.length === 0) {
+        grid.innerHTML = '<div class="empty-state">No se encontraron eventos. ¡Crea uno nuevo!</div>';
+        return;
+      }
+      grid.innerHTML = data.map(e => eventCard(e, true)).join('');
+    } catch {
+      showToast('Error al cargar eventos', 'error');
+    }
+  }
+
+  function clearFilters() {
+    document.getElementById('f-search').value = '';
+    document.getElementById('f-from').value = '';
+    document.getElementById('f-to').value = '';
+    document.getElementById('f-exclusive').value = '';
+    loadEvents();
+  }
+
+  function eventCard(e, showActions) {
+    const shared = e.sharedWith && e.sharedWith.length > 0
+      ? `<div class="meta">👥 Compartido con: ${e.sharedWith.join(', ')}</div>`
+      : '';
+    const actions = showActions ? `
+      <button class="btn btn-outline btn-sm" onclick="openEditModal(${e.id})">✏️ Editar</button>
+      <button class="btn btn-success btn-sm" onclick="openShareModal(${e.id})">🔗 Compartir</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteEvent(${e.id})">🗑️ Eliminar</button>
+    ` : '';
+    return `
+      <div class="event-card">
+        ${e.isExclusive ? '<span class="badge-exclusive">⭐ Exclusivo</span>' : ''}
+        <h3>${escHtml(e.title)}</h3>
+        ${e.description ? `<div class="meta">📝 ${escHtml(e.description)}</div>` : ''}
+        <div class="meta">🕐 ${fmt(e.startDate)} → ${fmt(e.endDate)}</div>
+        ${e.location ? `<div class="meta">📍 ${escHtml(e.location)}</div>` : ''}
+        <div class="meta">👤 ${escHtml(e.createdBy)}</div>
+        ${shared}
+        ${actions ? `<div class="card-footer">${actions}</div>` : ''}
+      </div>`;
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+              .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // ──────────────────────────────────
+  // CREATE / EDIT MODAL
+  // ──────────────────────────────────
+  function openCreateModal() {
+    document.getElementById('modal-title').textContent = 'Nuevo Evento';
+    document.getElementById('edit-id').value = '';
+    document.getElementById('f-title').value = '';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-start').value = '';
+    document.getElementById('f-end').value = '';
+    document.getElementById('f-location').value = '';
+    document.getElementById('f-exclusive').checked = false;
+    document.getElementById('modal-error').textContent = '';
+    document.getElementById('event-modal').classList.add('open');
+  }
+
+  async function openEditModal(id) {
+    try {
+      const e = await apiFetch(`/events/${id}`);
+      document.getElementById('modal-title').textContent = 'Editar Evento';
+      document.getElementById('edit-id').value = e.id;
+      document.getElementById('f-title').value = e.title;
+      document.getElementById('f-desc').value = e.description || '';
+      document.getElementById('f-start').value = toLocalISO(e.startDate);
+      document.getElementById('f-end').value = toLocalISO(e.endDate);
+      document.getElementById('f-location').value = e.location || '';
+      document.getElementById('f-exclusive').checked = e.isExclusive;
+      document.getElementById('modal-error').textContent = '';
+      document.getElementById('event-modal').classList.add('open');
+    } catch {
+      showToast('Error al cargar el evento', 'error');
+    }
+  }
+
+  async function saveEvent() {
+    const id = document.getElementById('edit-id').value;
+    const title = document.getElementById('f-title').value.trim();
+    const startVal = document.getElementById('f-start').value;
+    const endVal = document.getElementById('f-end').value;
+    const errEl = document.getElementById('modal-error');
+
+    if (!title || !startVal || !endVal) {
+      errEl.textContent = 'Título, inicio y fin son obligatorios.';
+      return;
+    }
+
+    const payload = {
+      title,
+      description: document.getElementById('f-desc').value.trim() || null,
+      startDate: new Date(startVal).toISOString(),
+      endDate: new Date(endVal).toISOString(),
+      location: document.getElementById('f-location').value.trim(),
+      isExclusive: document.getElementById('f-exclusive').checked,
+      createdBy: getCurrentUser()
+    };
+
+    try {
+      if (id) {
+        await apiFetch(`/events/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+        showToast('Evento actualizado', 'success');
+      } else {
+        await apiFetch('/events', { method: 'POST', body: JSON.stringify(payload) });
+        showToast('Evento creado', 'success');
+      }
+      closeModal('event-modal');
+      loadEvents();
+    } catch (err) {
+      errEl.textContent = err?.error || 'Error al guardar el evento.';
+    }
+  }
+
+  // ──────────────────────────────────
+  // DELETE
+  // ──────────────────────────────────
+  async function deleteEvent(id) {
+    if (!confirm('¿Eliminar este evento?')) return;
+    try {
+      await apiFetch(`/events/${id}`, { method: 'DELETE' });
+      showToast('Evento eliminado', 'success');
+      loadEvents();
+    } catch {
+      showToast('Error al eliminar el evento', 'error');
+    }
+  }
+
+  // ──────────────────────────────────
+  // SHARE MODAL
+  // ──────────────────────────────────
+  function openShareModal(id) {
+    document.getElementById('share-event-id').value = id;
+    document.getElementById('share-user').value = '';
+    document.getElementById('share-error').textContent = '';
+    document.getElementById('share-modal').classList.add('open');
+  }
+
+  async function shareEvent() {
+    const id = document.getElementById('share-event-id').value;
+    const user = document.getElementById('share-user').value.trim();
+    const errEl = document.getElementById('share-error');
+    if (!user) { errEl.textContent = 'Ingresa un nombre de usuario.'; return; }
+    try {
+      await apiFetch(`/events/${id}/share`, {
+        method: 'POST',
+        body: JSON.stringify({ sharedWith: user })
+      });
+      showToast('Evento compartido', 'success');
+      closeModal('share-modal');
+      loadEvents();
+    } catch (err) {
+      errEl.textContent = err?.error || 'Error al compartir el evento.';
+    }
+  }
+
+  // ──────────────────────────────────
+  // MODAL HELPERS
+  // ──────────────────────────────────
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  function closeIfOutside(e, id) {
+    if (e.target.id === id) closeModal(id);
+  }
+
+  // ──────────────────────────────────
+  // INIT
+  // ──────────────────────────────────
+  document.getElementById('navUser').addEventListener('change', () => {
+    const active = document.querySelector('.page.active').id;
+    if (active === 'page-dashboard') loadDashboard();
+    if (active === 'page-events') loadEvents();
+  });
+
+  loadDashboard();
+</script>
+</body>
+</html>
