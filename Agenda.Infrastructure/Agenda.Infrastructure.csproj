@@ -10,4 +10,8 @@
       <ProjectReference Include="..\Agenda.Application\Agenda.Application.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Context\SQLServer\" />
+    </ItemGroup>
+
 </Project>
