@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Agenda.Infrastructure.Context.SQLServer;
 
-public class GenericRepository<T> : IGenericRepository.IGenericRepository<T> where T : class
+public class GenericRepository<T> : IGenericRepository<T> where T : class
 {
     private readonly AppDbContext _context;
     private readonly DbSet<T> _dbSet;

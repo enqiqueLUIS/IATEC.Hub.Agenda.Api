@@ -1,4 +1,6 @@
 using System.Net;
+using Agenda.Application.Interfaces;
+using Agenda.Core.Entities.Core;
 using Agenda.Core.Entities.Core.CustomEntities.ResponseApi.Details;
 using Agenda.Core.Entities.Core.ResponseApi;
 using Agenda.Core.Interfaces;
@@ -69,7 +71,7 @@ public class UsersService : IUsersService
                             TotalRecords = totalRecords,
                             TotalPages = (int)Math.Ceiling((double)totalRecords / queryFilter.PageSize)
                         },
-                        Messages = new[] { new Message { Type = "success", Description = "Users retrieved successfully." } },
+                        Messages = new[] { new Message { Type = "success", Description = "Los usuarios recuperaron con éxito." } },
                         StatusCode = HttpStatusCode.OK
                     };
                 }
@@ -78,7 +80,7 @@ public class UsersService : IUsersService
                     return new ResponseGetObject
                     {
                         Data = users,
-                        Messages = new[] { new Message { Type = "success", Description = "Users retrieved successfully." } },
+                        Messages = new[] { new Message { Type = "success", Description = "Usuarios accedieron correctamente." } },
                         StatusCode = HttpStatusCode.OK
                     };
                 }
@@ -88,7 +90,7 @@ public class UsersService : IUsersService
                 return new ResponseGetObject
                 {
                     Data = null,
-                    Messages = new[] { new Message { Type = "warning", Description = "No users found." } },
+                    Messages = new[] { new Message { Type = "warning", Description = "No se encontraron usuarios." } },
                     StatusCode = HttpStatusCode.NotFound
                 };
             }
@@ -98,7 +100,7 @@ public class UsersService : IUsersService
             return new ResponseGetObject
             {
                 Data = null,
-                Messages = new[] { new Message { Type = "error", Description = "Error retrieving users." } },
+                Messages = new[] { new Message { Type = "error", Description = "Error al recuperar los usuarios." } },
                 StatusCode = HttpStatusCode.InternalServerError
             };
         }
@@ -111,12 +113,96 @@ public class UsersService : IUsersService
 
     public async Task<ResponsePost> InsertUsers(UsersQueryFilter queryFilter)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var validationResult = await _validator.ValidateAsync(queryFilter);
+
+            if (!validationResult.IsValid)
+            {
+                return new ResponsePost()
+                {
+                    Messages = validationResult.Errors.Select(e => new Message { Type = "error", Description = e.ErrorMessage }).ToArray(),
+                    StatusCode = HttpStatusCode.BadRequest
+                };
+            }
+
+            await _unitOfWork.UsersRepository.InsertAsync(
+                new Users
+                {
+                    Name     = queryFilter.Name,
+                    Email    = queryFilter.Email,
+                    Password = queryFilter.Password
+                });
+
+            return new ResponsePost()
+            {
+                Messages = new[] { new Message { Type = "success", Description = "Usuario creado exitosamente." } },
+                StatusCode = HttpStatusCode.OK
+            };
+        }
+        catch (Exception)
+        {
+            return new ResponsePost()
+            {
+                Messages = new[] { new Message { Type = "error", Description = "Error al crear el usuario." } },
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+        }
     }
 
     public async Task<ResponsePost> UpdateUsers(UsersQueryFilter queryFilter)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var validationResult = await _validator.ValidateAsync(queryFilter);
+
+            if (!validationResult.IsValid)
+            {
+                return new ResponsePost()
+                {
+                    Messages = validationResult.Errors
+                        .Select(e => new Message { Type = "error", Description = e.ErrorMessage })
+                        .ToArray(),
+                    StatusCode = HttpStatusCode.BadRequest
+                };
+            }
+
+            if (queryFilter.Id <= 0)
+            {
+                return new ResponsePost
+                {
+                    Messages = new[] { new Message { Type = "error", Description = "El Id del usuario no es válido." } },
+                    StatusCode = HttpStatusCode.BadRequest
+                };
+            }
+
+            _unitOfWork.UsersRepository.UpdateCustom(
+                new Users
+                {
+                    Id       = queryFilter.Id,
+                    Name     = queryFilter.Name,
+                    Email    = queryFilter.Email,
+                    Password = queryFilter.Password
+                },
+                x => x.Name,
+                x => x.Email,
+                x => x.Password
+            );
+
+            return new ResponsePost
+            {
+                Messages = new[] { new Message { Type = "success", Description = "Usuario actualizado exitosamente." } },
+                StatusCode = HttpStatusCode.OK
+            };
+        }
+        catch (Exception)
+        {
+            return new ResponsePost
+            {
+                Messages = new[] { new Message { Type = "error", Description = "Error al actualizar el usuario." } },
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+        }
     }
 
     public async Task<ResponsePost> DeleteUsers(UsersQueryFilter queryFilter)

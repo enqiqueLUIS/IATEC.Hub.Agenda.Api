@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Agenda.Core.Entities.Core;
 using Agenda.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -17,11 +18,17 @@ public class UnitOfWork : IUnitOfWork
 
 
     private readonly ConcurrentDictionary<Type, object> _repositories = new();
-        
-    public IGenericRepository.IGenericRepository<T> Repository<T>() where T : class
+
+    public IGenericRepository<Users> UsersRepository => Repository<Users>();
+    public IGenericRepository<Event> EventsRepository => Repository<Event>();
+    public IGenericRepository<EventParticipant> EventParticipantsRepository => Repository<EventParticipant>();
+    public IGenericRepository<UserEvent> UserEventsRepository => Repository<UserEvent>();
+    public IGenericRepository<EventInvitation> EventInvitationsRepository => Repository<EventInvitation>();
+
+    public IGenericRepository<T> Repository<T>() where T : class
     {
         if (_repositories.TryGetValue(typeof(T), out var repo)) 
-            return (IGenericRepository.IGenericRepository<T>)repo;
+            return (IGenericRepository<T>)repo;
 
         var repositoryInstance = new GenericRepository<T>(_context);
         _repositories.TryAdd(typeof(T), repositoryInstance);

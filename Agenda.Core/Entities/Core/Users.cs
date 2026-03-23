@@ -1,6 +1,6 @@
-namespace Agenda.Core.QueryFilters;
+namespace Agenda.Core.Entities.Core;
 
-public class UsersQueryFilter
+public class Users
 {
     public int Id { get; set; }
     public string Name { get; set; }

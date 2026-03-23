@@ -1,7 +1,7 @@
 using Agenda.Core.Entities.Core.ResponseApi;
 using Agenda.Core.QueryFilters;
 
-namespace Agenda.Application;
+namespace Agenda.Application.Interfaces;
 
 public interface IUsersService
 {

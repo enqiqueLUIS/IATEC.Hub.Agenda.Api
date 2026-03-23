@@ -1,6 +1,6 @@
-namespace Agenda.Application.Dtos;
+namespace Agenda.Core.Entities.Core;
 
-public class EventsDto
+public class Event
 {
     public int Id { get; set; }
     public int CreatedBy { get; set; }
@@ -9,6 +9,6 @@ public class EventsDto
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public string Location { get; set; }
-    public string EventType { get; set; }
-    public int Status { get; set; }
+    public string EventType { get; set; } // "Exclusive" | "Shared"
+    public int Status { get; set; } = 1;
 }
