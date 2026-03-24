@@ -1,4 +1,5 @@
 using System.Net;
+using Agenda.Application.Dtos;
 using Agenda.Application.Interfaces;
 using Agenda.Core.Entities.Core;
 using Agenda.Core.Entities.Core.CustomEntities.ResponseApi.Details;
@@ -24,9 +25,42 @@ public class InvitationsService : IInvitationsService
             var invitations = await _unitOfWork.EventInvitationsRepository
                 .Find(i => i.InvitedUserId == userId && i.Status == "Pending");
 
+            var result = new List<EventInvitationsDto>();
+
+            foreach (var inv in invitations)
+            {
+                var evt = await _unitOfWork.EventsRepository.GetByIdAsync(inv.EventId);
+                var sender = await _unitOfWork.UsersRepository.GetByIdAsync(inv.InvitedByUserId);
+
+                result.Add(new EventInvitationsDto
+                {
+                    Id = inv.Id,
+                    EventId = inv.EventId,
+                    InvitedByUserId = inv.InvitedByUserId,
+                    InvitedUserId = inv.InvitedUserId,
+                    SentAt = inv.SentAt,
+                    RespondedAt = inv.RespondedAt,
+                    Status = inv.Status,
+                    EventInfo = evt == null ? null : new InvitationEventDto
+                    {
+                        Id = evt.Id,
+                        Title = evt.Title,
+                        Description = evt.Description,
+                        StartDate = evt.StartDate,
+                        EndDate = evt.EndDate
+                    },
+                    SentBy = sender == null ? null : new InvitationUserDto
+                    {
+                        Id = sender.Id,
+                        Name = sender.Name,
+                        Email = sender.Email
+                    }
+                });
+            }
+
             return new ResponseGetObject
             {
-                Data = invitations,
+                Data = result,
                 Messages = new[] { new Message { Type = "success", Description = "Invitaciones obtenidas correctamente." } },
                 StatusCode = HttpStatusCode.OK
             };
@@ -46,6 +80,15 @@ public class InvitationsService : IInvitationsService
     {
         try
         {
+            if (queryFilter.InvitedUserId == userId)
+            {
+                return new ResponsePost
+                {
+                    Messages = new[] { new Message { Type = "error", Description = "No puedes invitarte a ti mismo." } },
+                    StatusCode = HttpStatusCode.BadRequest
+                };
+            }
+
             var eventExists = await _unitOfWork.EventsRepository.GetByIdAsync(queryFilter.EventId);
             if (eventExists == null || eventExists.Status == 0)
             {

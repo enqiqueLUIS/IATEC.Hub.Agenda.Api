@@ -22,5 +22,15 @@ public class EventsValidator : AbstractValidator<EventsQueryFilter>
             .NotEmpty().WithMessage("El tipo de evento es obligatorio.")
             .Must(t => t == "Exclusive" || t == "Shared")
             .WithMessage("El tipo de evento debe ser 'Exclusive' o 'Shared'.");
+
+        RuleFor(x => x.Location)
+            .Must(loc => string.IsNullOrWhiteSpace(loc) || IsGoogleMapsUrl(loc))
+            .WithMessage("El lugar debe ser un link válido de Google Maps.");
     }
+
+    private static bool IsGoogleMapsUrl(string url) =>
+        url.StartsWith("https://www.google.com/maps") ||
+        url.StartsWith("https://maps.google.com") ||
+        url.StartsWith("https://goo.gl/maps") ||
+        url.StartsWith("https://maps.app.goo.gl");
 }

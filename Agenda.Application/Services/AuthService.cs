@@ -50,6 +50,7 @@ public class AuthService : IAuthService
                 Data = new LoginResponse
                 {
                     Token     = token,
+                    UserId    = user.Id,
                     Name      = user.Name,
                     Email     = user.Email,
                     ExpiresAt = expiresAt

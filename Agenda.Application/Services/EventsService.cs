@@ -83,12 +83,12 @@ public class EventsService : IEventsService
 
             if (queryFilter.EventType == "Exclusive")
             {
-                var overlap = await HasExclusiveOverlap(userId, queryFilter.StartDate, queryFilter.EndDate);
-                if (overlap)
+                var exclusiveOverlap = await HasExclusiveOverlap(userId, queryFilter.StartDate, queryFilter.EndDate);
+                if (exclusiveOverlap)
                 {
                     return new ResponsePost
                     {
-                        Messages = new[] { new Message { Type = "error", Description = "Ya existe un evento exclusivo en ese horario." } },
+                        Messages = new[] { new Message { Type = "error", Description = "Ya tienes un evento exclusivo en ese horario." } },
                         StatusCode = HttpStatusCode.Conflict
                     };
                 }
@@ -97,12 +97,12 @@ public class EventsService : IEventsService
             var newEvent = new Event
             {
                 CreatedBy = userId,
-                Title = queryFilter.Title,
-                Description = queryFilter.Description,
+                Title = queryFilter.Title ?? string.Empty,
+                Description = queryFilter.Description ?? string.Empty,
                 StartDate = queryFilter.StartDate,
                 EndDate = queryFilter.EndDate,
-                Location = queryFilter.Location,
-                EventType = queryFilter.EventType,
+                Location = queryFilter.Location ?? string.Empty,
+                EventType = queryFilter.EventType ?? string.Empty,
                 Status = 1
             };
 
@@ -177,12 +177,12 @@ public class EventsService : IEventsService
 
             if (queryFilter.EventType == "Exclusive")
             {
-                var overlap = await HasExclusiveOverlap(userId, queryFilter.StartDate, queryFilter.EndDate, queryFilter.Id);
-                if (overlap)
+                var exclusiveOverlap = await HasExclusiveOverlap(userId, queryFilter.StartDate, queryFilter.EndDate, queryFilter.Id);
+                if (exclusiveOverlap)
                 {
                     return new ResponsePost
                     {
-                        Messages = new[] { new Message { Type = "error", Description = "Ya existe un evento exclusivo en ese horario." } },
+                        Messages = new[] { new Message { Type = "error", Description = "Ya tienes un evento exclusivo en ese horario." } },
                         StatusCode = HttpStatusCode.Conflict
                     };
                 }
@@ -193,12 +193,12 @@ public class EventsService : IEventsService
                 {
                     Id = queryFilter.Id,
                     CreatedBy = userId,
-                    Title = queryFilter.Title,
-                    Description = queryFilter.Description,
+                    Title = queryFilter.Title ?? string.Empty,
+                    Description = queryFilter.Description ?? string.Empty,
                     StartDate = queryFilter.StartDate,
                     EndDate = queryFilter.EndDate,
-                    Location = queryFilter.Location,
-                    EventType = queryFilter.EventType
+                    Location = queryFilter.Location ?? string.Empty,
+                    EventType = queryFilter.EventType ?? string.Empty
                 },
                 x => x.Title,
                 x => x.Description,
@@ -259,6 +259,7 @@ public class EventsService : IEventsService
         }
     }
 
+    // Verifica si hay algún evento Exclusivo en el horario (bloquea Compartidos)
     private async Task<bool> HasExclusiveOverlap(int userId, DateTime startDate, DateTime endDate, int excludeEventId = 0)
     {
         var userEvents = await _unitOfWork.UserEventsRepository
@@ -266,7 +267,7 @@ public class EventsService : IEventsService
 
         var eventIds = userEvents.Select(ue => ue.EventId).ToList();
 
-        var exclusiveEvents = await _unitOfWork.EventsRepository
+        var exclusive = await _unitOfWork.EventsRepository
             .Find(e => eventIds.Contains(e.Id)
                     && e.EventType == "Exclusive"
                     && e.Status == 1
@@ -274,6 +275,7 @@ public class EventsService : IEventsService
                     && e.StartDate < endDate
                     && e.EndDate > startDate);
 
-        return exclusiveEvents.Any();
+        return exclusive.Any();
     }
+
 }

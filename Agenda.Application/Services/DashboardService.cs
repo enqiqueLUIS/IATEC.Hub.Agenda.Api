@@ -1,4 +1,5 @@
 using System.Net;
+using Agenda.Application.Dtos;
 using Agenda.Application.Interfaces;
 using Agenda.Core.Entities.Core.CustomEntities.ResponseApi.Details;
 using Agenda.Core.Entities.Core.ResponseApi;
@@ -29,21 +30,46 @@ public class DashboardService : IDashboardService
             var allEvents = await _unitOfWork.EventsRepository
                 .Find(e => eventIds.Contains(e.Id) && e.Status == 1);
 
-            var currentEvents = allEvents
+            var ongoingRaw = allEvents
                 .Where(e => e.StartDate <= now && e.EndDate >= now)
                 .OrderBy(e => e.EndDate)
                 .ToList();
 
-            var upcomingEvents = allEvents
+            var upcomingRaw = allEvents
                 .Where(e => e.StartDate > now)
                 .OrderBy(e => e.StartDate)
                 .ToList();
+
+            var allUserIds = ongoingRaw.Select(e => e.CreatedBy)
+                .Concat(upcomingRaw.Select(e => e.CreatedBy))
+                .Distinct().ToList();
+
+            var users = new Dictionary<int, string>();
+            foreach (var uid in allUserIds)
+            {
+                var u = await _unitOfWork.UsersRepository.GetByIdAsync(uid);
+                users[uid] = u?.Name ?? "Desconocido";
+            }
+
+            DashboardEventDto Map(Agenda.Core.Entities.Core.Event e) => new()
+            {
+                Id = e.Id,
+                Title = e.Title,
+                Description = e.Description,
+                StartDate = e.StartDate,
+                EndDate = e.EndDate,
+                EventType = e.EventType,
+                CreatorName = users.GetValueOrDefault(e.CreatedBy, "Desconocido")
+            };
+
+            var ongoingEvents  = ongoingRaw.Select(Map).ToList();
+            var upcomingEvents = upcomingRaw.Select(Map).ToList();
 
             return new ResponseGetObject
             {
                 Data = new
                 {
-                    CurrentEvents = currentEvents,
+                    OngoingEvents = ongoingEvents,
                     UpcomingEvents = upcomingEvents
                 },
                 Messages = new[] { new Message { Type = "success", Description = "Dashboard obtenido correctamente." } },
