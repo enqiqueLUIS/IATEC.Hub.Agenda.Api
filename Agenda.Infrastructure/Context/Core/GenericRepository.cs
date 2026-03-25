@@ -117,16 +117,10 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
 
         if (local != null)
             _context.Entry(local).State = EntityState.Detached;
-
-        // --- 2) Adjuntar el stub y marcar solo las props indicadas ---
         var entry = set.Attach(entity);
-
-        // Asegura estado Unchanged y marca modificadas solo las solicitadas
         entry.State = EntityState.Unchanged;
         foreach (var prop in includeProperties) 
             entry.Property(prop).IsModified = true;
-
-        // --- 3) Guardar ---
         var affected = _context.SaveChanges();
         
         return new ResponsePostDetail

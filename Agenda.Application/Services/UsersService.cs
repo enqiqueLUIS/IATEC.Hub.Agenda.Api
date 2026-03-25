@@ -106,11 +106,6 @@ public class UsersService : IUsersService
         }
     }
 
-    public async Task<ResponseGetObject> GetUserById(int id)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<ResponsePost> InsertUsers(UsersQueryFilter queryFilter)
     {
         try
@@ -207,6 +202,32 @@ public class UsersService : IUsersService
 
     public async Task<ResponsePost> DeleteUsers(UsersQueryFilter queryFilter)
     {
-        throw new NotImplementedException();
+        try
+        {
+            if (queryFilter.Id <= 0)
+            {
+                return new ResponsePost
+                {
+                    Messages = new[] { new Message { Type = "error", Description = "El Id del usuario no es válido." } },
+                    StatusCode = HttpStatusCode.BadRequest
+                };
+            }
+
+            await _unitOfWork.UsersRepository.DeleteAsync(queryFilter.Id);
+
+            return new ResponsePost
+            {
+                Messages = new[] { new Message { Type = "success", Description = "Usuario eliminado exitosamente." } },
+                StatusCode = HttpStatusCode.OK
+            };
+        }
+        catch (Exception)
+        {
+            return new ResponsePost
+            {
+                Messages = new[] { new Message { Type = "error", Description = "Error al eliminar el usuario." } },
+                StatusCode = HttpStatusCode.InternalServerError
+            };
+        }
     }
 }

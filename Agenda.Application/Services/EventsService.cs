@@ -259,7 +259,6 @@ public class EventsService : IEventsService
         }
     }
 
-    // Verifica si hay algún evento Exclusivo en el horario (bloquea Compartidos)
     private async Task<bool> HasExclusiveOverlap(int userId, DateTime startDate, DateTime endDate, int excludeEventId = 0)
     {
         var userEvents = await _unitOfWork.UserEventsRepository

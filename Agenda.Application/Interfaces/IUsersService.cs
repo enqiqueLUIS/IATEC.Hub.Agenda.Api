@@ -6,7 +6,6 @@ namespace Agenda.Application.Interfaces;
 public interface IUsersService
 {
     Task<object> GetAllUsers(PaginationQueryFilter queryFilter);
-    Task<ResponseGetObject> GetUserById(int id);
     Task<ResponsePost> InsertUsers(UsersQueryFilter queryFilter);
     Task<ResponsePost> UpdateUsers(UsersQueryFilter queryFilter);
     Task<ResponsePost> DeleteUsers(UsersQueryFilter queryFilter);

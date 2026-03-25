@@ -8,5 +8,5 @@ public class EventInvitation
     public int InvitedUserId { get; set; }
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
     public DateTime? RespondedAt { get; set; }
-    public string Status { get; set; } = "Pending"; // Pending | Accepted | Rejected
+    public string Status { get; set; } = "Pending"; 
 }
